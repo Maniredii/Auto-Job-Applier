@@ -392,7 +392,6 @@ This project is licensed under the GNU Affero General Public License v3.0.
 
 ## 🙏 **Acknowledgments**
 
-- Original project by Sai Vignesh Golla
 - Enhanced with AI features by Manideep Reddy Eevuri
 - Built with Selenium, OpenAI, and Python
 
