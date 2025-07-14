@@ -60,26 +60,41 @@ class JobPlatformBase(ABC):
         pass
     
     def human_like_delay(self, min_delay: float = 1.0, max_delay: float = 3.0):
-        """Add human-like delays."""
+        """Add human-like delays with enhanced stealth."""
         if self.stealth_engine:
             self.stealth_engine.human_like_delay(min_delay, max_delay)
         else:
-            time.sleep(random.uniform(min_delay, max_delay))
-    
+            # Enhanced random delay with natural variation
+            delay = random.normalvariate((min_delay + max_delay) / 2, (max_delay - min_delay) / 6)
+            delay = max(min_delay, min(max_delay, delay))
+            time.sleep(delay)
+
     def human_like_click(self, element: WebElement):
-        """Perform human-like clicking."""
+        """Perform human-like clicking with stealth."""
         if self.stealth_engine:
             self.stealth_engine.human_like_click(self.driver, element)
         else:
-            element.click()
-    
+            # Add slight delay and movement before clicking
+            from selenium.webdriver.common.action_chains import ActionChains
+            actions = ActionChains(self.driver)
+            actions.move_to_element(element)
+            actions.pause(random.uniform(0.1, 0.3))
+            actions.click()
+            actions.perform()
+
     def human_like_typing(self, element: WebElement, text: str):
-        """Perform human-like typing."""
+        """Perform human-like typing with stealth."""
         if self.stealth_engine:
             self.stealth_engine.human_like_typing(element, text)
         else:
             element.clear()
-            element.send_keys(text)
+            # Type with human-like delays
+            for char in text:
+                element.send_keys(char)
+                time.sleep(random.uniform(0.05, 0.15))
+                # Occasional longer pause
+                if random.random() < 0.1:
+                    time.sleep(random.uniform(0.3, 0.8))
 
 class IndeedPlatform(JobPlatformBase):
     """Indeed job platform implementation."""

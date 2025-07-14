@@ -16,6 +16,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from modules.helpers import find_default_profile_directory, critical_error_log, print_lg
 from modules.stealth_engine import StealthEngine
+from modules.stealth_login import perform_stealth_linkedin_login
 from modules.human_behavior import HumanBehaviorSimulator
 from modules.smart_application_strategy import SmartApplicationStrategy
 
@@ -89,6 +90,15 @@ try:
     # Initialize smart application strategy
     driver.application_strategy = SmartApplicationStrategy()
     print_lg("🧠 Smart application strategy initialized")
+
+    # Perform stealth LinkedIn login
+    print_lg("🔐 Attempting stealth LinkedIn login...")
+    login_success = perform_stealth_linkedin_login(driver, username, password)
+
+    if login_success:
+        print_lg("✅ Stealth login successful - bot undetected!")
+    else:
+        print_lg("⚠️ Stealth login had issues - manual intervention may be required")
 except Exception as e:
     msg = 'Seems like either... \n\n1. Chrome is already running. \nA. Close all Chrome windows and try again. \n\n2. Google Chrome or Chromedriver is out dated. \nA. Update browser and Chromedriver (You can run "windows-setup.bat" in /setup folder for Windows PC to update Chromedriver)! \n\n3. If error occurred when using "stealth_mode", try reinstalling undetected-chromedriver. \nA. Open a terminal and use commands "pip uninstall undetected-chromedriver" and "pip install undetected-chromedriver". \n\n\nIf issue persists, try Safe Mode. Set, safe_mode = True in config.py \n\nPlease check GitHub discussions/support for solutions https://github.com/GodsScion/Auto_job_applier_linkedIn \n                                   OR \nReach out in discord ( https://discord.gg/fFp7uUzWCY )'
     if isinstance(e,TimeoutError): msg = "Couldn't download Chrome-driver. Set stealth_mode = False in config!"

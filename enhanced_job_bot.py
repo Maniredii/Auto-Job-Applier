@@ -32,6 +32,7 @@ from modules.follow_up_automation import FollowUpAutomation
 # Import AI connections
 from modules.ai.openaiConnections import ai_create_openai_client, ai_close_openai_client
 from modules.ai.deepseekConnections import deepseek_create_client
+from modules.ai.groqConnections import groq_create_client, groq_close_client
 
 # Import original functions for compatibility
 from runAiBot import is_logged_in_LN, login_LN, get_applied_job_ids
@@ -55,6 +56,12 @@ class EnhancedJobBot:
                     self.ai_client = ai_create_openai_client()
                 elif ai_provider.lower() == "deepseek":
                     self.ai_client = deepseek_create_client()
+                elif ai_provider.lower() == "groq":
+                    from config.secrets import groq_api_key, groq_model
+                    self.ai_client = groq_create_client(groq_api_key, groq_model)
+                    if self.ai_client:
+                        print_lg(f"🚀 Groq AI initialized with model: {groq_model}")
+                        print_lg("⚡ Ultra-fast inference enabled!")
                 else:
                     print_lg(f"❌ Unknown AI provider: {ai_provider}")
             except Exception as e:
@@ -411,8 +418,10 @@ class EnhancedJobBot:
             if self.ai_client:
                 if ai_provider.lower() == "openai":
                     ai_close_openai_client(self.ai_client)
+                elif ai_provider.lower() == "groq":
+                    groq_close_client(self.ai_client)
                 print_lg("🤖 AI client closed")
-            
+
             print_lg("🧹 Cleanup completed")
         except Exception as e:
             print_lg(f"❌ Error during cleanup: {e}")

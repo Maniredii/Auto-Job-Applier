@@ -14,6 +14,15 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from modules.helpers import print_lg
 
+# Import Groq AI for job matching
+try:
+    from modules.ai.groqConnections import groq_create_client
+    from config.secrets import groq_api_key, groq_model
+    GROQ_AVAILABLE = True
+except ImportError:
+    GROQ_AVAILABLE = False
+    print_lg("⚠️ Groq AI not available for job matching")
+
 @dataclass
 class JobMatch:
     """Data class for job matching results."""
@@ -68,6 +77,17 @@ class JobMatchingIntelligence:
         
         # Company intelligence
         self.company_intelligence = self._load_company_intelligence()
+
+        # Initialize Groq AI client for job matching
+        self.groq_client = None
+        if GROQ_AVAILABLE and groq_api_key:
+            try:
+                self.groq_client = groq_create_client(groq_api_key, groq_model)
+                if self.groq_client:
+                    print_lg("🚀 Groq AI enabled for job matching")
+            except Exception as e:
+                print_lg(f"⚠️ Failed to initialize Groq AI: {e}")
+                self.groq_client = None
         
     def _load_user_profile(self) -> UserProfile:
         """Load user profile from configuration."""
@@ -187,22 +207,31 @@ class JobMatchingIntelligence:
     
     def analyze_job_match(self, job_data: Dict) -> JobMatch:
         """
-        Analyzes how well a job matches the user's profile and preferences.
+        Analyzes how well a job matches the user's profile using AI and traditional methods.
         """
         job_id = job_data.get('job_id', 'unknown')
         title = job_data.get('title', 'Unknown')
         company = job_data.get('company', 'Unknown')
         description = job_data.get('description', '')
-        
-        print_lg(f"🔍 Analyzing job match: {title} at {company}")
-        
+
+        print_lg(f"🔍 AI-analyzing job match: {title} at {company}")
+
+        # Use AI analysis if available
+        if self.groq_client and description:
+            ai_analysis = self._ai_analyze_job_match(job_data)
+            if ai_analysis:
+                return self._create_job_match_from_ai_analysis(job_data, ai_analysis)
+
+        # Fallback to traditional analysis
+        print_lg("🔄 Using traditional job matching analysis")
+
         # Calculate individual match scores
         skill_match = self._calculate_skill_match(description, title)
         experience_match = self._calculate_experience_match(description)
         location_match = self._calculate_location_match(job_data)
         salary_match = self._calculate_salary_match(job_data)
         culture_match = self._calculate_culture_match(company, description)
-        
+
         # Calculate overall match score
         weights = {
             'skill': 0.35,
@@ -211,7 +240,7 @@ class JobMatchingIntelligence:
             'salary': 0.15,
             'culture': 0.15
         }
-        
+
         overall_score = (
             skill_match * weights['skill'] +
             experience_match * weights['experience'] +
@@ -219,16 +248,16 @@ class JobMatchingIntelligence:
             salary_match * weights['salary'] +
             culture_match * weights['culture']
         )
-        
+
         # Generate reasons and red flags
         reasons = self._generate_match_reasons(
             skill_match, experience_match, location_match, salary_match, culture_match
         )
         red_flags = self._identify_red_flags(job_data, description)
-        
+
         # Generate recommendation
         recommendation = self._generate_recommendation(overall_score, red_flags)
-        
+
         job_match = JobMatch(
             job_id=job_id,
             title=title,
@@ -243,10 +272,100 @@ class JobMatchingIntelligence:
             red_flags=red_flags,
             recommendation=recommendation
         )
-        
+
         # Save to history
         self._save_match_to_history(job_match)
-        
+
+        return job_match
+
+    def _ai_analyze_job_match(self, job_data: Dict) -> Optional[Dict]:
+        """
+        Use Groq AI to analyze job match compatibility.
+        """
+        try:
+            print_lg("🤖 Using Groq AI for job match analysis...")
+
+            # Prepare user profile for AI
+            user_profile_dict = {
+                'skills': self.user_profile.skills,
+                'experience_years': self.user_profile.experience_years,
+                'education_level': self.user_profile.education_level,
+                'preferred_locations': self.user_profile.preferred_locations,
+                'salary_range': self.user_profile.salary_range,
+                'work_style_preference': self.user_profile.work_style_preference,
+                'industry_preferences': self.user_profile.industry_preferences,
+                'career_goals': self.user_profile.career_goals
+            }
+
+            # Use Groq AI to analyze job match
+            ai_analysis = self.groq_client.analyze_job_match(
+                job_data.get('description', ''), user_profile_dict
+            )
+
+            print_lg("✅ AI job match analysis completed")
+            return ai_analysis
+
+        except Exception as e:
+            print_lg(f"⚠️ AI job analysis failed: {e}")
+            return None
+
+    def _create_job_match_from_ai_analysis(self, job_data: Dict, ai_analysis: Dict) -> JobMatch:
+        """
+        Create JobMatch object from AI analysis results.
+        """
+        job_id = job_data.get('job_id', 'unknown')
+        title = job_data.get('title', 'Unknown')
+        company = job_data.get('company', 'Unknown')
+
+        # Extract AI analysis results
+        match_percentage = ai_analysis.get('match_percentage', 70) / 100.0
+        matching_skills = ai_analysis.get('matching_skills', [])
+        missing_requirements = ai_analysis.get('missing_requirements', [])
+        recommendation_text = ai_analysis.get('recommendation', 'consider')
+
+        # Convert AI recommendation to our format
+        recommendation_mapping = {
+            'highly_recommended': 'HIGHLY RECOMMENDED: Excellent match',
+            'recommended': 'RECOMMENDED: Good match',
+            'consider': 'CONSIDER: Moderate match',
+            'not_recommended': 'NOT RECOMMENDED: Poor match'
+        }
+
+        recommendation = recommendation_mapping.get(recommendation_text, 'CONSIDER: Moderate match')
+
+        # Generate reasons from AI analysis
+        reasons = []
+        if matching_skills:
+            reasons.append(f"Strong skill alignment: {', '.join(matching_skills[:3])}")
+        if ai_analysis.get('experience_match') == 'good':
+            reasons.append("Experience level matches requirements")
+        if ai_analysis.get('cultural_fit') in ['excellent', 'good']:
+            reasons.append("Good cultural fit indicators")
+
+        # Generate red flags from missing requirements
+        red_flags = []
+        if missing_requirements:
+            red_flags.extend([f"Missing: {req}" for req in missing_requirements[:3]])
+
+        # Create JobMatch object
+        job_match = JobMatch(
+            job_id=job_id,
+            title=title,
+            company=company,
+            match_score=match_percentage,
+            skill_match=len(matching_skills) / max(len(self.user_profile.skills), 1),
+            experience_match=0.8 if ai_analysis.get('experience_match') == 'good' else 0.6,
+            location_match=0.8,  # Default, could be enhanced
+            salary_match=0.7 if ai_analysis.get('salary_compatibility') == 'high' else 0.6,
+            culture_match=0.9 if ai_analysis.get('cultural_fit') == 'excellent' else 0.7,
+            reasons=reasons,
+            red_flags=red_flags,
+            recommendation=recommendation
+        )
+
+        # Save to history
+        self._save_match_to_history(job_match)
+
         return job_match
     
     def _calculate_skill_match(self, description: str, title: str) -> float:

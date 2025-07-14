@@ -15,6 +15,15 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 
 from modules.helpers import print_lg
 
+# Import Groq AI for resume optimization
+try:
+    from modules.ai.groqConnections import groq_create_client
+    from config.secrets import groq_api_key, groq_model
+    GROQ_AVAILABLE = True
+except ImportError:
+    GROQ_AVAILABLE = False
+    print_lg("⚠️ Groq AI not available for resume optimization")
+
 @dataclass
 class ResumeSection:
     """Data class for resume sections."""
@@ -43,17 +52,28 @@ class ResumeOptimizer:
         self.base_resume_path = base_resume_path
         self.optimized_resumes_dir = "all resumes/optimized"
         self.templates_dir = "templates/resume_templates"
-        
+
         # Ensure directories exist
         os.makedirs(self.optimized_resumes_dir, exist_ok=True)
         os.makedirs(self.templates_dir, exist_ok=True)
-        
+
         # Load skill mappings and synonyms
         self.skill_mappings = self._load_skill_mappings()
         self.keyword_weights = self._load_keyword_weights()
-        
+
         # Resume parsing cache
         self.parsed_resume_cache = None
+
+        # Initialize Groq AI client for resume optimization
+        self.groq_client = None
+        if GROQ_AVAILABLE and groq_api_key:
+            try:
+                self.groq_client = groq_create_client(groq_api_key, groq_model)
+                if self.groq_client:
+                    print_lg("🚀 Groq AI enabled for resume optimization")
+            except Exception as e:
+                print_lg(f"⚠️ Failed to initialize Groq AI: {e}")
+                self.groq_client = None
         
     def _load_skill_mappings(self) -> Dict:
         """Load skill mappings and synonyms."""
@@ -308,33 +328,130 @@ class ResumeOptimizer:
         
         return 'general'
     
-    def optimize_resume_for_job(self, job_requirements: JobRequirements, 
+    def optimize_resume_for_job(self, job_requirements: JobRequirements,
                                job_title: str, company: str) -> str:
         """
-        Creates an optimized resume for a specific job.
+        Creates an AI-optimized resume for a specific job using Groq.
         """
-        print_lg(f"🎯 Optimizing resume for {job_title} at {company}")
-        
+        print_lg(f"🎯 AI-optimizing resume for {job_title} at {company}")
+
         # Parse base resume if not cached
         if not self.parsed_resume_cache:
             self.parsed_resume_cache = self._parse_base_resume()
-        
-        # Create optimized resume
+
+        # Use AI optimization if available
+        if self.groq_client:
+            optimized_content = self._ai_optimize_resume_content(
+                self.parsed_resume_cache, job_requirements, job_title, company
+            )
+        else:
+            optimized_content = self.parsed_resume_cache
+
+        # Create optimized resume document
         optimized_resume = self._create_optimized_resume(
-            self.parsed_resume_cache, job_requirements, job_title, company
+            optimized_content, job_requirements, job_title, company
         )
-        
+
         # Generate filename
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         company_clean = re.sub(r'[^\w\s-]', '', company).strip()[:20]
         filename = f"resume_{company_clean}_{timestamp}.docx"
         filepath = os.path.join(self.optimized_resumes_dir, filename)
-        
+
         # Save optimized resume
         optimized_resume.save(filepath)
-        
-        print_lg(f"✅ Optimized resume saved: {filepath}")
+
+        print_lg(f"✅ AI-optimized resume saved: {filepath}")
         return filepath
+
+    def _ai_optimize_resume_content(self, resume_content: Dict, job_requirements: JobRequirements,
+                                   job_title: str, company: str) -> Dict:
+        """
+        Use Groq AI to optimize resume content for specific job.
+        """
+        print_lg("🤖 Using Groq AI to optimize resume content...")
+
+        try:
+            # Prepare job description for AI
+            job_description = f"""
+            Job Title: {job_title}
+            Company: {company}
+            Required Skills: {', '.join(job_requirements.required_skills)}
+            Preferred Skills: {', '.join(job_requirements.preferred_skills)}
+            Experience Level: {job_requirements.experience_level}
+            Industry: {job_requirements.industry}
+            """
+
+            # Use Groq AI to optimize resume content
+            optimized_content = self.groq_client.optimize_resume_content(
+                resume_content, job_description
+            )
+
+            print_lg("✅ Resume content optimized with AI")
+            return optimized_content
+
+        except Exception as e:
+            print_lg(f"⚠️ AI optimization failed, using standard optimization: {e}")
+            return resume_content
+
+    def generate_ai_cover_letter(self, job_requirements: JobRequirements,
+                                job_title: str, company: str, user_profile: Dict = None) -> str:
+        """
+        Generate AI-powered cover letter using Groq.
+        """
+        print_lg(f"📝 Generating AI cover letter for {job_title} at {company}")
+
+        if not self.groq_client:
+            return self._generate_fallback_cover_letter(job_title, company, user_profile)
+
+        try:
+            # Prepare job description
+            job_description = f"""
+            Job Title: {job_title}
+            Company: {company}
+            Required Skills: {', '.join(job_requirements.required_skills)}
+            Preferred Skills: {', '.join(job_requirements.preferred_skills)}
+            Experience Level: {job_requirements.experience_level}
+            Industry: {job_requirements.industry}
+            Job Function: {job_requirements.job_function}
+            """
+
+            # Prepare user profile
+            if not user_profile:
+                user_profile = {
+                    'name': 'Job Applicant',
+                    'experience_years': 3,
+                    'skills': job_requirements.required_skills[:5],
+                    'education': 'Bachelor\'s Degree',
+                    'career_goals': [job_title]
+                }
+
+            # Generate cover letter with Groq AI
+            cover_letter = self.groq_client.generate_cover_letter(
+                job_description, user_profile, {'name': company}
+            )
+
+            print_lg("✅ AI cover letter generated successfully")
+            return cover_letter
+
+        except Exception as e:
+            print_lg(f"⚠️ AI cover letter generation failed: {e}")
+            return self._generate_fallback_cover_letter(job_title, company, user_profile)
+
+    def _generate_fallback_cover_letter(self, job_title: str, company: str, user_profile: Dict = None) -> str:
+        """Generate fallback cover letter if AI fails."""
+        name = user_profile.get('name', 'Job Applicant') if user_profile else 'Job Applicant'
+
+        return f"""Dear Hiring Manager,
+
+I am writing to express my strong interest in the {job_title} position at {company}. With my background and experience, I am confident that I would be a valuable addition to your team.
+
+My skills and experience align well with the requirements for this role, and I am particularly excited about the opportunity to contribute to {company}'s continued success. I am eager to bring my expertise and enthusiasm to your organization.
+
+I would welcome the opportunity to discuss how my qualifications can benefit your team. Thank you for considering my application, and I look forward to hearing from you.
+
+Best regards,
+{name}"""
     
     def _parse_base_resume(self) -> Dict:
         """Parse the base resume into structured data."""
