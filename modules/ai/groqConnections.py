@@ -390,23 +390,37 @@ Best regards,
             print_lg(f"❌ Model {new_model} not available")
             print_lg(f"Available models: {list(self.available_models.keys())}")
 
-def groq_create_client(api_key: str = None, model: str = "mixtral-8x7b-32768") -> Optional[GroqAIClient]:
+def groq_create_client(api_key: str = None, model: str = None) -> Optional[GroqAIClient]:
     """
     Create and initialize a Groq AI client.
     """
+    # Import config variables
+    from config.secrets import use_AI, groq_api_key, groq_model
+
     if not GROQ_AVAILABLE:
         print_lg("❌ Groq package not installed")
         return None
-    
-    if not api_key:
-        api_key = os.getenv("GROQ_API_KEY")
-        
-    if not api_key:
-        print_lg("❌ Groq API key not provided")
+
+    if not use_AI:
+        print_lg("❌ AI is not enabled! Please enable it by setting `use_AI = True` in `secrets.py`")
         return None
-    
+
+    # Use config values if not provided
+    if not api_key:
+        api_key = groq_api_key
+    if not model:
+        model = groq_model
+
+    if not api_key:
+        print_lg("❌ Groq API key not provided in config")
+        return None
+
     try:
         client = GroqAIClient(api_key=api_key, model=model)
+        print_lg("---- SUCCESSFULLY CREATED GROQ CLIENT! ----")
+        print_lg(f"Using Model: {model}")
+        print_lg("Check './config/secrets.py' for more details.\n")
+        print_lg("---------------------------------------------")
         return client
     except Exception as e:
         print_lg(f"❌ Failed to create Groq client: {e}")
@@ -420,3 +434,163 @@ def groq_close_client(client: GroqAIClient):
         print_lg("🔒 Groq AI client closed")
         # Groq client doesn't need explicit closing
         pass
+
+def groq_extract_skills(client: GroqAIClient, job_description: str) -> str:
+    """
+    Extract skills from job description using Groq AI.
+    """
+    if not client:
+        return "Error: No Groq client available"
+
+    prompt = f"""
+    Extract the key skills and technologies mentioned in this job description.
+    Return only a comma-separated list of skills, no additional text.
+
+    Job Description:
+    {job_description}
+
+    Focus on:
+    - Programming languages
+    - Frameworks and libraries
+    - Tools and technologies
+    - Soft skills
+    - Certifications
+
+    Example format: Python, React, AWS, Machine Learning, Communication
+    """
+
+    try:
+        response = client.client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": "You are an expert at extracting relevant skills from job descriptions. Return only the skills as a comma-separated list."},
+                {"role": "user", "content": prompt}
+            ],
+            model=client.model,
+            max_tokens=500,
+            temperature=0.3
+        )
+
+        skills = response.choices[0].message.content.strip()
+        print_lg(f"✅ Skills extracted with Groq: {skills[:100]}...")
+        return skills
+
+    except Exception as e:
+        print_lg(f"❌ Error extracting skills with Groq: {e}")
+        return "Error extracting skills"
+
+def groq_answer_question(client: GroqAIClient, question: str, options: List[str] = None,
+                        question_type: str = "text", job_description: str = "",
+                        about_company: str = None, user_information_all: str = "") -> str:
+    """
+    Answer application questions using Groq AI.
+    """
+    if not client:
+        return ""
+
+    # Build context for better answers
+    context = f"""
+    Job Description: {job_description}
+    Company Info: {about_company or 'Not provided'}
+    User Profile: {user_information_all}
+    """
+
+    if options:
+        prompt = f"""
+        Answer this application question by selecting the most appropriate option.
+
+        Question: {question}
+        Options: {', '.join(options)}
+
+        Context:
+        {context}
+
+        Return only the exact option text that best fits, no additional explanation.
+        """
+    else:
+        prompt = f"""
+        Answer this application question professionally and concisely.
+
+        Question: {question}
+        Question Type: {question_type}
+
+        Context:
+        {context}
+
+        Provide a professional, relevant answer that would be appropriate for a job application.
+        Keep it concise but informative.
+        """
+
+    try:
+        response = client.client.chat.completions.create(
+            messages=[
+                {"role": "system", "content": "You are an expert career counselor helping with job applications. Provide professional, accurate answers."},
+                {"role": "user", "content": prompt}
+            ],
+            model=client.model,
+            max_tokens=300,
+            temperature=0.5
+        )
+
+        answer = response.choices[0].message.content.strip()
+        print_lg(f"✅ Question answered with Groq")
+        return answer
+
+    except Exception as e:
+        print_lg(f"❌ Error answering question with Groq: {e}")
+        return ""
+
+def groq_generate_resume(client: GroqAIClient, job_description: str, user_profile: Dict) -> str:
+    """
+    Generate optimized resume content using Groq AI.
+    """
+    if not client:
+        return "Error: No Groq client available"
+
+    try:
+        # Use the existing optimize_resume_content method
+        resume_sections = {
+            "summary": user_profile.get("summary", "Professional with relevant experience"),
+            "skills": user_profile.get("skills", []),
+            "experience": user_profile.get("experience", []),
+            "education": user_profile.get("education", "")
+        }
+
+        optimized_sections = client.optimize_resume_content(resume_sections, job_description)
+
+        # Convert to resume format
+        resume_content = f"""
+        PROFESSIONAL SUMMARY
+        {optimized_sections.get('summary', 'Professional with relevant experience')}
+
+        SKILLS
+        {', '.join(optimized_sections.get('skills', []))}
+
+        EXPERIENCE
+        {optimized_sections.get('experience', 'Relevant professional experience')}
+
+        EDUCATION
+        {optimized_sections.get('education', 'Educational background')}
+        """
+
+        return resume_content.strip()
+
+    except Exception as e:
+        print_lg(f"❌ Error generating resume with Groq: {e}")
+        return "Error generating resume"
+
+def groq_generate_coverletter(client: GroqAIClient, job_description: str, user_profile: Dict,
+                             about_company: str = None) -> str:
+    """
+    Generate cover letter using Groq AI.
+    """
+    if not client:
+        return "Error: No Groq client available"
+
+    try:
+        company_info = {"about": about_company} if about_company else None
+        cover_letter = client.generate_cover_letter(job_description, user_profile, company_info)
+        return cover_letter
+
+    except Exception as e:
+        print_lg(f"❌ Error generating cover letter with Groq: {e}")
+        return "Error generating cover letter"

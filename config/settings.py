@@ -68,7 +68,7 @@ smooth_scroll = False               # True or False, Note: True or False are cas
 keep_screen_awake = True            # True or False, Note: True or False are case-sensitive (Note: Will temporarily deactivate when any application dialog boxes are present (Eg: Pause before submit, Help needed for a question..))
 
 # Recommended anti-detection settings for LinkedIn:
-stealth_mode = True                # Enable advanced bot detection bypass
+stealth_mode = False               # Enable advanced bot detection bypass (temporarily disabled)
 enable_human_behavior = True       # Simulate human-like behavior patterns
 randomize_timing = True            # Add random delays to mimic human behavior
 enable_break_simulation = True     # Take realistic breaks during long sessions

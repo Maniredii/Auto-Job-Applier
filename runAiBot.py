@@ -30,6 +30,7 @@ from modules.clickers_and_finders import *
 from modules.validator import validate_config
 from modules.ai.openaiConnections import ai_create_openai_client, ai_extract_skills, ai_answer_question, ai_close_openai_client, ai_generate_resume, ai_generate_coverletter
 from modules.ai.deepseekConnections import deepseek_create_client, deepseek_extract_skills, deepseek_answer_question
+from modules.ai.groqConnections import groq_create_client, groq_extract_skills, groq_answer_question, groq_close_client, groq_generate_resume, groq_generate_coverletter
 from modules.ai.huggingfaceConnections import huggingface_create_client, huggingface_answer_question, huggingface_generate_resume, huggingface_generate_coverletter
 
 from typing import Literal
@@ -622,6 +623,8 @@ def answer_questions(modal: WebElement, questions_list: set, work_location: str,
                                 answer = ai_answer_question(aiClient, label_org, question_type="text", job_description=job_description, user_information_all=user_information_all)
                             elif ai_provider.lower() == "deepseek":
                                 answer = deepseek_answer_question(aiClient, label_org, options=None, question_type="text", job_description=job_description, about_company=None, user_information_all=user_information_all)
+                            elif ai_provider.lower() == "groq":
+                                answer = groq_answer_question(aiClient, label_org, options=None, question_type="text", job_description=job_description, about_company=None, user_information_all=user_information_all)
                             elif ai_provider.lower() == "huggingface":
                                 answer = huggingface_answer_question(aiClient, label_org, options=None, question_type="text", job_description=job_description, about_company=None, user_information_all=user_information_all)
                             else:
@@ -668,6 +671,8 @@ def answer_questions(modal: WebElement, questions_list: set, work_location: str,
                                 answer = ai_answer_question(aiClient, label_org, question_type="textarea", job_description=job_description, user_information_all=user_information_all)
                             elif ai_provider.lower() == "deepseek":
                                 answer = deepseek_answer_question(aiClient, label_org, options=None, question_type="textarea", job_description=job_description, about_company=None, user_information_all=user_information_all)
+                            elif ai_provider.lower() == "groq":
+                                answer = groq_answer_question(aiClient, label_org, options=None, question_type="textarea", job_description=job_description, about_company=None, user_information_all=user_information_all)
                             elif ai_provider.lower() == "huggingface":
                                 answer = huggingface_answer_question(aiClient, label_org, options=None, question_type="textarea", job_description=job_description, about_company=None, user_information_all=user_information_all)
                             else:
@@ -1010,6 +1015,8 @@ def apply_to_jobs(search_terms: list[str]) -> None:
                                 skills = ai_extract_skills(aiClient, description)
                             elif ai_provider.lower() == "deepseek":
                                 skills = deepseek_extract_skills(aiClient, description)
+                            elif ai_provider.lower() == "groq":
+                                skills = groq_extract_skills(aiClient, description)
                             elif ai_provider.lower() == "huggingface":
                                 skills = "In Development"  # Optionally implement skill extraction for Hugging Face
                             else:
@@ -1228,10 +1235,12 @@ def main() -> None:
                 aiClient = ai_create_openai_client()
             elif ai_provider.lower() == "deepseek":
                 aiClient = deepseek_create_client()
+            elif ai_provider.lower() == "groq":
+                aiClient = groq_create_client()
             elif ai_provider.lower() == "huggingface":
                 aiClient = huggingface_create_client()
             else:
-                print_lg(f"Unknown AI provider: {ai_provider}. Supported providers are: openai, deepseek, huggingface")
+                print_lg(f"Unknown AI provider: {ai_provider}. Supported providers are: openai, deepseek, groq, huggingface")
                 aiClient = None
             ##<
         # Start applying to jobs
@@ -1292,7 +1301,9 @@ def main() -> None:
                 if ai_provider.lower() == "openai":
                     ai_close_openai_client(aiClient)
                 elif ai_provider.lower() == "deepseek":
-                    ai_close_openai_client(aiClient)  
+                    ai_close_openai_client(aiClient)
+                elif ai_provider.lower() == "groq":
+                    groq_close_client(aiClient)
                 elif ai_provider.lower() == "huggingface":
                     pass  # No explicit close needed for Hugging Face
                 print_lg(f"Closed {ai_provider} AI client.")
