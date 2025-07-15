@@ -1,0 +1,83 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+env/
+ENV/
+.venv/
+.env/
+
+# Environment Variables
+.env
+*.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs/*.log
+*.log
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+temp/*
+!temp/.gitkeep
+
+# Browser profiles (may contain sensitive data)
+browser_profiles/*
+!browser_profiles/.gitkeep
+
+# User data
+data/resumes/*
+!data/resumes/.gitkeep
+data/cover_letters/*
+!data/cover_letters/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Chrome/Browser
+*.crx
+*.pem
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pytest
+.pytest_cache/
+.coverage
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
