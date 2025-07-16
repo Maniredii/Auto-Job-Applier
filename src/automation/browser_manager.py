@@ -77,7 +77,7 @@ class BrowserManager:
         # Anti-detection measures
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option('useAutomationExtension', False)
-        options.add_experimental_option("detach", True)
+        # options.add_experimental_option("detach", True)  # Removed due to compatibility issues
         
         # Disable logging
         options.add_argument("--disable-logging")
