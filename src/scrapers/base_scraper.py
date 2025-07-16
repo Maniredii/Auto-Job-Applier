@@ -25,15 +25,34 @@ class JobListing:
     description: str
     url: str
     posted_date: str
+    platform: str = ""  # Platform where job was found
     job_type: str = ""
     experience_level: str = ""
     salary: str = ""
     skills: List[str] = None
     scraped_at: str = ""
-    
+
+    # Platform-specific fields
+    job_id: str = ""  # Platform-specific job ID
+    company_url: str = ""  # Company profile URL
+    apply_url: str = ""  # Direct application URL
+    remote_allowed: bool = False
+    visa_sponsorship: bool = False
+    easy_apply: bool = False  # For platforms with quick apply features
+
+    # Additional metadata
+    company_size: str = ""
+    company_industry: str = ""
+    benefits: List[str] = None
+    requirements: List[str] = None
+
     def __post_init__(self):
         if self.skills is None:
             self.skills = []
+        if self.benefits is None:
+            self.benefits = []
+        if self.requirements is None:
+            self.requirements = []
         if not self.scraped_at:
             self.scraped_at = time.strftime("%Y-%m-%d %H:%M:%S")
 

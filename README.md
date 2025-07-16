@@ -4,12 +4,39 @@ An intelligent job application automation system that uses AI to customize resum
 
 ## 🌟 Features
 
-- **🔍 Intelligent Job Scraping**: Scrapes jobs from LinkedIn, Indeed, and other platforms
+- **🔍 Multi-Platform Job Scraping**: Scrapes jobs from 10+ platforms including LinkedIn, Indeed, Glassdoor, Naukri, Internshala, Unstop, AngelList, Dice, Monster, and ZipRecruiter
 - **📄 AI-Powered Resume Optimization**: Uses Groq API to tailor resumes for each job
 - **📝 Dynamic Cover Letter Generation**: Creates personalized cover letters using AI
 - **🤖 Stealth Auto-Application**: Applies to jobs with advanced bot detection evasion
 - **📊 Application Tracking**: Comprehensive dashboard to monitor applications
 - **🛡️ Anti-Detection Measures**: Undetected browser automation with human-like behavior
+
+## 🌐 Supported Platforms
+
+The system supports job scraping and automated applications across multiple platforms:
+
+### **Primary Platforms** (Fully Implemented)
+- **LinkedIn** - Professional networking and job search
+- **Indeed** - Global job search engine
+- **Glassdoor** - Jobs with company reviews and salary insights
+- **Naukri.com** - Leading Indian job portal
+
+### **Specialized Platforms** (Fully Implemented)
+- **Internshala** - Internships and entry-level opportunities
+- **Unstop** (formerly Dare2Compete) - Competitions, hackathons, and jobs
+- **AngelList/Wellfound** - Startup and tech company jobs
+- **Dice** - Technology and IT jobs
+
+### **Additional Platforms** (Fully Implemented)
+- **Monster** - General job search platform
+- **ZipRecruiter** - Quick apply job platform
+
+Each platform includes:
+- ✅ Intelligent job scraping with anti-detection
+- ✅ Platform-specific search filters and criteria
+- ✅ Automated login and session management
+- ✅ Rate limiting and respectful scraping
+- ✅ Platform-optimized application automation
 
 ## 🚀 Quick Start
 

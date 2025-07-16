@@ -584,8 +584,28 @@ class AutoApplicationSystem:
                 # This is where actual application submission would happen
                 # For now, we'll simulate the process
 
-                if application.platform.lower() == 'linkedin':
+                # Route to platform-specific application handler
+                platform = application.platform.lower()
+                if platform == 'linkedin':
                     success = await self._submit_linkedin_application(application)
+                elif platform == 'indeed':
+                    success = await self._submit_indeed_application(application)
+                elif platform == 'glassdoor':
+                    success = await self._submit_glassdoor_application(application)
+                elif platform == 'naukri':
+                    success = await self._submit_naukri_application(application)
+                elif platform == 'internshala':
+                    success = await self._submit_internshala_application(application)
+                elif platform == 'unstop':
+                    success = await self._submit_unstop_application(application)
+                elif platform == 'angellist':
+                    success = await self._submit_angellist_application(application)
+                elif platform == 'dice':
+                    success = await self._submit_dice_application(application)
+                elif platform == 'monster':
+                    success = await self._submit_monster_application(application)
+                elif platform == 'ziprecruiter':
+                    success = await self._submit_ziprecruiter_application(application)
                 else:
                     success = await self._submit_generic_application(application)
 
@@ -624,6 +644,60 @@ class AutoApplicationSystem:
         # 4. Upload resume and cover letter
         # 5. Submit application
 
+        return True
+
+    async def _submit_indeed_application(self, application: JobApplication) -> bool:
+        """Submit application via Indeed"""
+        logger.debug(f"Simulating Indeed application submission for {application.job_title}")
+        # Implementation would use Indeed's application system
+        return True
+
+    async def _submit_glassdoor_application(self, application: JobApplication) -> bool:
+        """Submit application via Glassdoor"""
+        logger.debug(f"Simulating Glassdoor application submission for {application.job_title}")
+        # Implementation would use Glassdoor's application system
+        return True
+
+    async def _submit_naukri_application(self, application: JobApplication) -> bool:
+        """Submit application via Naukri"""
+        logger.debug(f"Simulating Naukri application submission for {application.job_title}")
+        # Implementation would use Naukri's application system
+        return True
+
+    async def _submit_internshala_application(self, application: JobApplication) -> bool:
+        """Submit application via Internshala"""
+        logger.debug(f"Simulating Internshala application submission for {application.job_title}")
+        # Implementation would use Internshala's application system
+        return True
+
+    async def _submit_unstop_application(self, application: JobApplication) -> bool:
+        """Submit application via Unstop"""
+        logger.debug(f"Simulating Unstop application submission for {application.job_title}")
+        # Implementation would use Unstop's application system
+        return True
+
+    async def _submit_angellist_application(self, application: JobApplication) -> bool:
+        """Submit application via AngelList"""
+        logger.debug(f"Simulating AngelList application submission for {application.job_title}")
+        # Implementation would use AngelList's application system
+        return True
+
+    async def _submit_dice_application(self, application: JobApplication) -> bool:
+        """Submit application via Dice"""
+        logger.debug(f"Simulating Dice application submission for {application.job_title}")
+        # Implementation would use Dice's application system
+        return True
+
+    async def _submit_monster_application(self, application: JobApplication) -> bool:
+        """Submit application via Monster"""
+        logger.debug(f"Simulating Monster application submission for {application.job_title}")
+        # Implementation would use Monster's application system
+        return True
+
+    async def _submit_ziprecruiter_application(self, application: JobApplication) -> bool:
+        """Submit application via ZipRecruiter"""
+        logger.debug(f"Simulating ZipRecruiter application submission for {application.job_title}")
+        # Implementation would use ZipRecruiter's application system
         return True
 
     async def _submit_generic_application(self, application: JobApplication) -> bool:

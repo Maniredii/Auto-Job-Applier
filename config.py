@@ -17,10 +17,46 @@ class Config:
     GROQ_API_KEY: str = os.getenv('GROQ_API_KEY', '')
     OPENAI_API_KEY: str = os.getenv('OPENAI_API_KEY', '')
     
-    # LinkedIn Credentials
+    # Platform Credentials
     LINKEDIN_EMAIL: str = os.getenv('LINKEDIN_EMAIL', '')
     LINKEDIN_PASSWORD: str = os.getenv('LINKEDIN_PASSWORD', '')
     LINKEDIN_PHONE: str = os.getenv('LINKEDIN_PHONE', '')
+
+    # Indeed Credentials
+    INDEED_EMAIL: str = os.getenv('INDEED_EMAIL', '')
+    INDEED_PASSWORD: str = os.getenv('INDEED_PASSWORD', '')
+
+    # Glassdoor Credentials
+    GLASSDOOR_EMAIL: str = os.getenv('GLASSDOOR_EMAIL', '')
+    GLASSDOOR_PASSWORD: str = os.getenv('GLASSDOOR_PASSWORD', '')
+
+    # Naukri Credentials
+    NAUKRI_EMAIL: str = os.getenv('NAUKRI_EMAIL', '')
+    NAUKRI_PASSWORD: str = os.getenv('NAUKRI_PASSWORD', '')
+
+    # Internshala Credentials
+    INTERNSHALA_EMAIL: str = os.getenv('INTERNSHALA_EMAIL', '')
+    INTERNSHALA_PASSWORD: str = os.getenv('INTERNSHALA_PASSWORD', '')
+
+    # Unstop Credentials
+    UNSTOP_EMAIL: str = os.getenv('UNSTOP_EMAIL', '')
+    UNSTOP_PASSWORD: str = os.getenv('UNSTOP_PASSWORD', '')
+
+    # AngelList Credentials
+    ANGELLIST_EMAIL: str = os.getenv('ANGELLIST_EMAIL', '')
+    ANGELLIST_PASSWORD: str = os.getenv('ANGELLIST_PASSWORD', '')
+
+    # Dice Credentials
+    DICE_EMAIL: str = os.getenv('DICE_EMAIL', '')
+    DICE_PASSWORD: str = os.getenv('DICE_PASSWORD', '')
+
+    # Monster Credentials
+    MONSTER_EMAIL: str = os.getenv('MONSTER_EMAIL', '')
+    MONSTER_PASSWORD: str = os.getenv('MONSTER_PASSWORD', '')
+
+    # ZipRecruiter Credentials
+    ZIPRECRUITER_EMAIL: str = os.getenv('ZIPRECRUITER_EMAIL', '')
+    ZIPRECRUITER_PASSWORD: str = os.getenv('ZIPRECRUITER_PASSWORD', '')
     
     # Email Configuration
     EMAIL_HOST: str = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
@@ -46,6 +82,31 @@ class Config:
     DEFAULT_LOCATION: str = os.getenv('DEFAULT_LOCATION', 'Remote')
     DEFAULT_EXPERIENCE_LEVEL: str = os.getenv('DEFAULT_EXPERIENCE_LEVEL', 'Mid-Level')
     DEFAULT_JOB_TYPES: str = os.getenv('DEFAULT_JOB_TYPES', 'Full-time,Contract')
+    DEFAULT_PLATFORMS: str = os.getenv('DEFAULT_PLATFORMS', 'linkedin,indeed,glassdoor')
+
+    # Platform-specific Settings
+    ENABLE_LINKEDIN: bool = os.getenv('ENABLE_LINKEDIN', 'true').lower() == 'true'
+    ENABLE_INDEED: bool = os.getenv('ENABLE_INDEED', 'true').lower() == 'true'
+    ENABLE_GLASSDOOR: bool = os.getenv('ENABLE_GLASSDOOR', 'true').lower() == 'true'
+    ENABLE_NAUKRI: bool = os.getenv('ENABLE_NAUKRI', 'false').lower() == 'true'
+    ENABLE_INTERNSHALA: bool = os.getenv('ENABLE_INTERNSHALA', 'false').lower() == 'true'
+    ENABLE_UNSTOP: bool = os.getenv('ENABLE_UNSTOP', 'false').lower() == 'true'
+    ENABLE_ANGELLIST: bool = os.getenv('ENABLE_ANGELLIST', 'false').lower() == 'true'
+    ENABLE_DICE: bool = os.getenv('ENABLE_DICE', 'false').lower() == 'true'
+    ENABLE_MONSTER: bool = os.getenv('ENABLE_MONSTER', 'false').lower() == 'true'
+    ENABLE_ZIPRECRUITER: bool = os.getenv('ENABLE_ZIPRECRUITER', 'false').lower() == 'true'
+
+    # Rate Limiting (requests per minute per platform)
+    LINKEDIN_RATE_LIMIT: int = int(os.getenv('LINKEDIN_RATE_LIMIT', '10'))
+    INDEED_RATE_LIMIT: int = int(os.getenv('INDEED_RATE_LIMIT', '15'))
+    GLASSDOOR_RATE_LIMIT: int = int(os.getenv('GLASSDOOR_RATE_LIMIT', '12'))
+    NAUKRI_RATE_LIMIT: int = int(os.getenv('NAUKRI_RATE_LIMIT', '20'))
+    INTERNSHALA_RATE_LIMIT: int = int(os.getenv('INTERNSHALA_RATE_LIMIT', '15'))
+    UNSTOP_RATE_LIMIT: int = int(os.getenv('UNSTOP_RATE_LIMIT', '10'))
+    ANGELLIST_RATE_LIMIT: int = int(os.getenv('ANGELLIST_RATE_LIMIT', '8'))
+    DICE_RATE_LIMIT: int = int(os.getenv('DICE_RATE_LIMIT', '12'))
+    MONSTER_RATE_LIMIT: int = int(os.getenv('MONSTER_RATE_LIMIT', '15'))
+    ZIPRECRUITER_RATE_LIMIT: int = int(os.getenv('ZIPRECRUITER_RATE_LIMIT', '10'))
     
     # File Paths
     RESUMES_DIR: str = './data/resumes'

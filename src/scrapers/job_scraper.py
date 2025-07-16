@@ -20,6 +20,12 @@ class JobPlatform(Enum):
     INDEED = "indeed"
     GLASSDOOR = "glassdoor"
     NAUKRI = "naukri"
+    INTERNSHALA = "internshala"
+    UNSTOP = "unstop"
+    ANGELLIST = "angellist"
+    DICE = "dice"
+    MONSTER = "monster"
+    ZIPRECRUITER = "ziprecruiter"
 
 @dataclass
 class SearchCriteria:
@@ -53,16 +59,45 @@ class JobScraper:
     def _initialize_scrapers(self) -> None:
         """Initialize platform-specific scrapers"""
         try:
-            # LinkedIn scraper
+            # LinkedIn scraper (already implemented)
             self.scrapers[JobPlatform.LINKEDIN] = LinkedInScraper()
             logger.info("LinkedIn scraper initialized")
-            
-            # TODO: Add other platform scrapers
-            # self.scrapers[JobPlatform.INDEED] = IndeedScraper()
-            # self.scrapers[JobPlatform.GLASSDOOR] = GlassdoorScraper()
-            
+
+            # Initialize other platform scrapers
+            self._initialize_platform_scrapers()
+
         except Exception as e:
             logger.error(f"Error initializing scrapers: {str(e)}")
+
+    def _initialize_platform_scrapers(self) -> None:
+        """Initialize platform-specific scrapers with error handling"""
+        platform_scrapers = {
+            JobPlatform.INDEED: "IndeedScraper",
+            JobPlatform.GLASSDOOR: "GlassdoorScraper",
+            JobPlatform.NAUKRI: "NaukriScraper",
+            JobPlatform.INTERNSHALA: "IntershalaScraper",
+            JobPlatform.UNSTOP: "UnstopScraper",
+            JobPlatform.ANGELLIST: "AngelListScraper",
+            JobPlatform.DICE: "DiceScraper",
+            JobPlatform.MONSTER: "MonsterScraper",
+            JobPlatform.ZIPRECRUITER: "ZipRecruiterScraper"
+        }
+
+        for platform, scraper_class_name in platform_scrapers.items():
+            try:
+                # Dynamically import and initialize scrapers
+                module_name = f"{platform.value}_scraper"
+                module = __import__(f"src.scrapers.{module_name}", fromlist=[scraper_class_name])
+                scraper_class = getattr(module, scraper_class_name)
+                self.scrapers[platform] = scraper_class()
+                logger.info(f"{platform.value.title()} scraper initialized")
+            except (ImportError, AttributeError) as e:
+                logger.warning(f"Could not initialize {platform.value} scraper: {str(e)}")
+                # Continue without this scraper
+                continue
+            except Exception as e:
+                logger.error(f"Error initializing {platform.value} scraper: {str(e)}")
+                continue
     
     def scrape_jobs(self, criteria: SearchCriteria) -> List[JobListing]:
         """
