@@ -74,9 +74,25 @@ class BrowserManager:
         options.add_argument("--disable-plugins-discovery")
         options.add_argument("--disable-preconnect")
         
-        # Anti-detection measures
-        options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        options.add_experimental_option('useAutomationExtension', False)
+        # Enhanced anti-detection measures (compatible with current Chrome)
+        try:
+            options.add_experimental_option("excludeSwitches", ["enable-automation", "enable-logging"])
+        except:
+            pass  # Skip if not supported
+
+        try:
+            options.add_experimental_option('useAutomationExtension', False)
+        except:
+            pass  # Skip if not supported
+
+        try:
+            options.add_experimental_option("prefs", {
+                "profile.default_content_setting_values.notifications": 2,
+                "profile.default_content_settings.popups": 0,
+                "profile.managed_default_content_settings.images": 2
+            })
+        except:
+            pass  # Skip if not supported
         # options.add_experimental_option("detach", True)  # Removed due to compatibility issues
         
         # Disable logging
